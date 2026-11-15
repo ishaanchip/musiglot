@@ -5,6 +5,9 @@
 
 Inputs in songs/<slug>/:
     instrumental.mp3, vocals.mp3   pre-separated stems (wav/m4a/flac/ogg also work)
+    full.mp3                       optional: the original full mix (vocals + music), used for
+                                   "Listen first" and guide vocals. Must be the same recording
+                                   the stems came from, so the timing matches.
     meta.json                      {title, artist, album, language: "es"|"hi", lrclibId?, offsetMs?}
     lyrics.lrc / lyrics.txt        optional manual override, used only if LRCLIB has nothing
 
@@ -115,12 +118,37 @@ def get_asr_words(song_dir: Path, vocals: Path, language: str, provider: str, re
     return words
 
 
+def add_full_only(song_dir: Path, slug: str, no_db: bool) -> None:
+    """Fast path: attach full.mp3 to a song that has already been processed."""
+    full = find_audio(song_dir, "full")
+    if not full:
+        fail(f"No full.mp3 (or .wav/.m4a/.flac/.ogg) in {song_dir}")
+    out = media_dir() / slug
+    song_json = out / "song.json"
+    if not song_json.exists():
+        fail(f"{slug} has not been processed yet. Run without --full-only first.")
+    shutil.copyfile(full, out / f"full{full.suffix}")
+    path = f"/media/{slug}/full{full.suffix}"
+    doc = json.loads(song_json.read_text(encoding="utf-8"))
+    doc["audio"]["full"] = path
+    song_json.write_text(json.dumps(doc, ensure_ascii=False, indent=1), encoding="utf-8")
+    if no_db:
+        print(f"[db] --no-db: updated {song_json} only")
+    elif db.set_fields(slug, {"audio.full": path}):
+        print(f"[db] set audio.full = {path} on songs/{slug}")
+    else:
+        fail(f"{slug} is not in the database. Run without --full-only first.")
+    print("Done. Refresh the app: Listen first and guide vocals now use the full mix.")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("song_dir", type=Path, help="songs/<slug>")
     ap.add_argument("--no-db", action="store_true", help="do not write to MongoDB (still writes media/<slug>/song.json)")
     ap.add_argument("--skip-llm", action="store_true", help="skip the LLM step (rule-based phonetics, no translations)")
     ap.add_argument("--refresh", action="store_true", help="ignore cached LRCLIB / ASR / LLM results")
+    ap.add_argument("--full-only", action="store_true",
+                    help="only add or replace full.mp3 on a song that is already processed (fast; skips every other step)")
     args = ap.parse_args()
 
     song_dir = args.song_dir.resolve()
@@ -130,10 +158,15 @@ def main() -> None:
     meta = load_meta(song_dir)
     print(f"== {meta['title']} / {meta['artist']} [{meta['language']}] (slug: {slug}) ==")
 
+    if args.full_only:
+        add_full_only(song_dir, slug, args.no_db)
+        return
+
     # ---- inputs ----
+    full = find_audio(song_dir, "full")
     vocals, instrumental = find_audio(song_dir, "vocals"), find_audio(song_dir, "instrumental")
     if not (vocals and instrumental):
-        mix = find_audio(song_dir, "mix")
+        mix = find_audio(song_dir, "mix") or full
         if mix:
             separate.separate(mix, song_dir)  # OPTIONAL HOOK: vocal separation (see separate.py)
             vocals, instrumental = find_audio(song_dir, "vocals"), find_audio(song_dir, "instrumental")
@@ -218,6 +251,13 @@ def main() -> None:
     url = f"/media/{slug}"
     shutil.copyfile(instrumental, out / f"instrumental{instrumental.suffix}")
     shutil.copyfile(vocals, out / f"vocals{vocals.suffix}")
+    audio = {"instrumental": f"{url}/instrumental{instrumental.suffix}", "vocals": f"{url}/vocals{vocals.suffix}"}
+    if full:
+        shutil.copyfile(full, out / f"full{full.suffix}")
+        audio["full"] = f"{url}/full{full.suffix}"
+        print(f"[audio] full mix found ({full.name}): used for Listen first and guide vocals")
+    else:
+        print("[audio] no full.mp3: Listen first and guide vocals will play the two stems together")
     (out / "pitch.json").write_text(json.dumps(contour), encoding="utf-8")
     clip_names = clips.cut_line_clips(vocals, lines, out / "clips", y=y_voc, sr=SR)
     print(f"[clips] wrote {len(clip_names)} line clips")
@@ -241,7 +281,7 @@ def main() -> None:
         "lyricsSource": {"provider": src["provider"], "lrclibId": src.get("lrclibId"),
                          "syncedLyrics": src.get("syncedLyrics"), "offsetMs": offset_ms},
         "difficulty": diff,
-        "audio": {"instrumental": f"{url}/instrumental{instrumental.suffix}", "vocals": f"{url}/vocals{vocals.suffix}"},
+        "audio": audio,
         "pitchContour": {"path": f"{url}/pitch.json", "hopSec": contour["hopSec"]},
         "lines": doc_lines,
     }

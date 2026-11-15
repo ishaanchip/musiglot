@@ -41,6 +41,7 @@ Use Chrome or Edge with headphones. The app needs microphone access, which brows
 1. Make a folder `songs/<slug>/` containing:
    - `instrumental.mp3`: the backing track
    - `vocals.mp3`: the isolated vocal
+   - `full.mp3` (optional): the original full mix, vocals plus music. Used for "Listen first" and guide vocals. It must be the same recording the stems came from so the timing matches. Without it the app plays the two stems together instead.
    - `meta.json`: `{ "title", "artist", "album", "language": "es" | "hi" }`, plus optional `"lrclibId"` to pin an exact LRCLIB entry and `"offsetMs"` to shift the lyric timing by hand
    - `lyrics.lrc` or `lyrics.txt` (optional): manual override, used only if LRCLIB has nothing usable
 2. Set up the pipeline once:
@@ -56,6 +57,12 @@ python3 -m venv .venv && .venv/bin/pip install -r pipeline/requirements.txt
 ```
 
 No code changes are needed. `songs/como-la-flor/meta.json` is already in the repo; drop `instrumental.mp3` and `vocals.mp3` next to it and run the command above.
+
+To add `full.mp3` to a song you already processed, without redoing the other steps:
+
+```bash
+.venv/bin/python pipeline/process_song.py songs/<slug> --full-only
+```
 
 The run prints the chosen LRCLIB ID, whether it shifted the timing, and the first few lines with word timestamps so you can sanity-check them. Useful flags: `--no-db` (write `media/<slug>/song.json` only), `--skip-llm`, `--refresh` (ignore cached LRCLIB / Whisper / LLM results).
 
@@ -96,6 +103,12 @@ LRCLIB needs no key, only a `User-Agent` (`LRCLIB_USER_AGENT`).
 With neither Azure nor OpenAI configured, the pronunciation score is an estimate: it only measures whether you were singing during each line, not how you pronounced it. The results page says so. For a no-key local option, install `pipeline/requirements-optional.txt` (faster-whisper) and set `ALIGNER=local` and `PRONUNCIATION_PROVIDER=local`.
 
 The LLM is Anthropic only in this version. The content step also asks the API to reroute to a fallback model if the primary declines a request; set `ANTHROPIC_FALLBACKS=0` to turn that off.
+
+## Practising a song
+
+- **Listen first** plays the original (singer and music) with the lyrics and pitch lane moving in sync. Nothing is recorded and the microphone is not opened. Pause to click a line and study it.
+- **Start singing** always begins a take from the top and records you.
+- **Guide vocals** decides whether you hear the original singer while you sing. Off gives you the backing track only; on makes it easier to follow along. You can switch it during a take, and the choice is remembered. Wear headphones so the microphone does not pick the singer up.
 
 ## How scoring works
 

@@ -2,12 +2,18 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, formatDuration } from '../api.js';
 import { MicRecorder } from '../audio/recorder.js';
+import { SongPlayer } from '../audio/player.js';
 import { stopSpeaking } from '../audio/tts.js';
 import LyricsPanel from '../components/LyricsPanel.jsx';
 import LinePanel from '../components/LinePanel.jsx';
 import PitchLane from '../components/PitchLane.jsx';
 
-// phase: loading -> headphones -> idle -> playing <-> paused -> scoring -> (results page)
+const GUIDE_KEY = 'musiglot.guideVocals';
+
+// phase:
+//   loading -> headphones -> idle
+//   idle -> listening <-> listenPaused     (preview with the original singer, nothing recorded)
+//   idle | listening | listenPaused -> playing <-> paused -> scoring -> results page
 export default function PracticePage() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -17,12 +23,20 @@ export default function PracticePage() {
   const [time, setTime] = useState(0);
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState('');
-  const audioRef = useRef(null);
+  const [guideOn, setGuideOn] = useState(() => localStorage.getItem(GUIDE_KEY) === '1');
+  const playerRef = useRef(null);
   const recorderRef = useRef(null);
   const finishingRef = useRef(false);
-  const getTime = useCallback(() => audioRef.current?.currentTime || 0, []);
+  const phaseRef = useRef(phase);
+  phaseRef.current = phase;
+  const getTime = useCallback(() => playerRef.current?.currentTime || 0, []);
 
-  // Load the song, its reference pitch, and the instrumental.
+  const listening = phase === 'listening' || phase === 'listenPaused';
+  const singing = phase === 'playing' || phase === 'paused' || phase === 'scoring';
+  const paused = phase === 'paused' || phase === 'listenPaused';
+  const running = phase === 'playing' || phase === 'listening';
+
+  // Load the song and its reference pitch.
   useEffect(() => {
     let cancelled = false;
     api(`/songs/${slug}`)
@@ -49,7 +63,7 @@ export default function PracticePage() {
   const finish = useCallback(async () => {
     if (finishingRef.current || !recorderRef.current) return;
     finishingRef.current = true;
-    audioRef.current?.pause();
+    playerRef.current?.pause();
     recorderRef.current.pause();
     setSelected(null);
     setPhase('scoring');
@@ -69,19 +83,34 @@ export default function PracticePage() {
     }
   }, [song, navigate]);
 
+  // The song reached its end: a preview just rewinds, a take gets scored.
+  const finishRef = useRef(finish);
+  finishRef.current = finish;
   useEffect(() => {
     if (!song) return undefined;
-    const audio = new Audio(song.audio.instrumental);
-    audio.preload = 'auto';
-    audioRef.current = audio;
-    audio.addEventListener('ended', finish);
-    audio.addEventListener('error', () => setError('Could not load the backing track for this song.'));
+    const player = new SongPlayer(song.audio, {
+      onError: setError,
+      onEnded: () => {
+        if (phaseRef.current === 'listening') {
+          player.rewind();
+          setTime(0);
+          setPhase('idle');
+        } else {
+          finishRef.current();
+        }
+      },
+    });
+    playerRef.current = player;
     return () => {
-      audio.removeEventListener('ended', finish);
-      audio.pause();
-      audioRef.current = null;
+      player.destroy();
+      playerRef.current = null;
     };
-  }, [song, finish]);
+  }, [song]);
+
+  // The original singer is always audible in a preview; while singing it follows the toggle.
+  useEffect(() => {
+    playerRef.current?.setGuide(listening || guideOn);
+  }, [listening, guideOn, song]);
 
   // Release the microphone and stop any speech when leaving the page.
   useEffect(() => () => {
@@ -89,9 +118,9 @@ export default function PracticePage() {
     stopSpeaking();
   }, []);
 
-  // Drive lyric highlighting while playing.
+  // Drive lyric highlighting while audio is running.
   useEffect(() => {
-    if (phase !== 'playing') return undefined;
+    if (!running) return undefined;
     let raf;
     const tick = () => {
       setTime(getTime());
@@ -99,30 +128,61 @@ export default function PracticePage() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [phase, getTime]);
+  }, [running, getTime]);
 
-  const play = async () => {
+  const toggleGuide = (on) => {
+    setGuideOn(on);
+    localStorage.setItem(GUIDE_KEY, on ? '1' : '0');
+  };
+
+  // ---- Listen first (no microphone, nothing recorded) ----
+  const listen = async () => {
     setError('');
     setSelected(null);
     stopSpeaking();
     try {
+      playerRef.current.setGuide(true);
+      await playerRef.current.play();
+      setPhase('listening');
+    } catch (err) {
+      setError(err.message || 'Could not start playback.');
+    }
+  };
+  const pauseListening = () => {
+    playerRef.current.pause();
+    setTime(getTime());
+    setPhase('listenPaused');
+  };
+
+  // ---- Sing (instrumental and mic recording start together) ----
+  const sing = async () => {
+    setError('');
+    setSelected(null);
+    stopSpeaking();
+    const player = playerRef.current;
+    try {
+      if (listening) {
+        // A take always starts from the top, whatever was being previewed.
+        player.rewind();
+        setTime(0);
+      }
+      player.setGuide(guideOn);
       if (!recorderRef.current) {
         const recorder = new MicRecorder();
         await recorder.init();
         recorderRef.current = recorder;
       }
-      // Instrumental and mic recording start together.
-      await audioRef.current.play();
+      await player.play();
       await recorderRef.current.start(getTime);
       setPhase('playing');
     } catch (err) {
-      audioRef.current?.pause();
+      player?.pause();
+      if (listening) setPhase('idle');
       setError(err.message || 'Could not start playback.');
     }
   };
-
-  const pause = () => {
-    audioRef.current.pause();
+  const pauseSinging = () => {
+    playerRef.current.pause();
     recorderRef.current?.pause();
     setTime(getTime());
     setPhase('paused');
@@ -131,9 +191,8 @@ export default function PracticePage() {
   if (phase === 'loading') return <main className="center muted">Loading song…</main>;
   if (!song) return <main className="narrow"><p className="error">{error}</p><Link to="/">Back to songs</Link></main>;
 
-  const started = phase === 'playing' || phase === 'paused' || phase === 'scoring';
-  const paused = phase === 'paused';
   const selectedLine = selected != null ? song.lines.find((l) => l.index === selected) : null;
+  const blocked = phase === 'scoring' || phase === 'headphones';
 
   return (
     <main className="practice">
@@ -142,7 +201,7 @@ export default function PracticePage() {
           <div className="card modal" role="dialog" aria-modal="true" aria-labelledby="hp-title">
             <h2 id="hp-title">Put on headphones</h2>
             <p>We record your voice while the backing track plays. Without headphones the microphone picks up the music and your scores will be off.</p>
-            <p className="muted">Your browser will ask for microphone access when you press Play.</p>
+            <p className="muted">You can listen to the song first. Your browser asks for microphone access only when you start singing.</p>
             <button className="primary" autoFocus onClick={() => setPhase('idle')}>
               I'm wearing headphones
             </button>
@@ -160,24 +219,51 @@ export default function PracticePage() {
         </div>
 
         <PitchLane pitch={pitch} getTime={getTime} recorderRef={recorderRef} />
-        <LyricsPanel song={song} time={time} started={started} paused={paused} selectedIndex={selected} onSelect={setSelected} />
+        <LyricsPanel song={song} time={time} started={listening || singing} paused={paused} selectedIndex={selected} onSelect={setSelected} />
 
         <div className="controls">
-          {phase === 'playing' ? (
-            <button className="primary" onClick={pause}>Pause</button>
+          {singing ? (
+            <>
+              {phase === 'playing' ? (
+                <button className="primary" onClick={pauseSinging}>Pause</button>
+              ) : (
+                <button className="primary" onClick={sing} disabled={blocked}>Resume</button>
+              )}
+              <button onClick={finish} disabled={phase === 'scoring'}>End</button>
+            </>
           ) : (
-            <button className="primary" onClick={play} disabled={phase === 'scoring' || phase === 'headphones'}>
-              {started ? 'Resume' : 'Play'}
-            </button>
+            <>
+              {phase === 'listening' ? (
+                <button onClick={pauseListening}>Pause</button>
+              ) : (
+                <button onClick={listen} disabled={blocked}>{phase === 'listenPaused' ? 'Keep listening' : 'Listen first'}</button>
+              )}
+              <button className="primary" onClick={sing} disabled={blocked}>Start singing</button>
+            </>
           )}
-          <button onClick={finish} disabled={!recorderRef.current || phase === 'scoring'}>End</button>
           <span className="muted clock">{formatDuration(time)} / {formatDuration(song.durationSec)}</span>
           <span className="status" role="status">
+            {phase === 'listening' && 'Listening to the original. Nothing is being recorded.'}
+            {phase === 'listenPaused' && 'Paused. Click any line to study it.'}
             {phase === 'playing' && <><i className="rec-dot" /> Recording</>}
             {phase === 'paused' && 'Paused. Click any line to study it.'}
             {phase === 'scoring' && 'Scoring your take…'}
           </span>
         </div>
+
+        <label className={`toggle ${listening ? 'disabled' : ''}`}>
+          <input type="checkbox" checked={listening || guideOn} disabled={listening || phase === 'scoring'} onChange={(e) => toggleGuide(e.target.checked)} />
+          <span>
+            <strong>Guide vocals</strong>
+            <small className="muted">
+              {listening
+                ? 'Always on while you listen. This switch applies when you sing.'
+                : guideOn
+                  ? 'You will hear the original singer while you sing. Easier to follow along.'
+                  : 'Backing track only while you sing. Turn on to hear the original singer.'}
+            </small>
+          </span>
+        </label>
         {error && <p className="error" role="alert">{error}</p>}
       </section>
 
@@ -187,7 +273,8 @@ export default function PracticePage() {
         <aside className="card line-panel hint">
           <h3>How it works</h3>
           <ol>
-            <li>Press <strong>Play</strong> and sing along as each line lights up.</li>
+            <li><strong>Listen first</strong> to hear the original with the lyrics lighting up. Nothing is recorded.</li>
+            <li>Press <strong>Start singing</strong> and sing along as each line lights up. Switch on <strong>Guide vocals</strong> if you want the original singer to help.</li>
             <li>Follow the bars in the pitch lane. Your voice is the dot.</li>
             <li><strong>Pause</strong> and click a line to see what it means and hear it.</li>
             <li>Press <strong>End</strong> (or sing to the end) to get your grades.</li>

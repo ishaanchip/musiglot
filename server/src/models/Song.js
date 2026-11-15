@@ -51,7 +51,9 @@ const songSchema = new mongoose.Schema(
       grammar: Number,
       details: mongoose.Schema.Types.Mixed, // raw measurements (bpm, syllables/sec, ...)
     },
-    audio: { instrumental: String, vocals: String }, // URL paths under /media
+    // URL paths under /media. `full` (original mix) is optional; the client
+    // falls back to playing both stems together when it is missing.
+    audio: { instrumental: String, vocals: String, full: String },
     pitchContour: { path: String, hopSec: Number }, // JSON file: { hopSec, frames[], notes[] }
     lines: [lineSchema],
   },
