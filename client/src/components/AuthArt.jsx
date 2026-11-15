@@ -62,26 +62,40 @@ const Wave = ({ c }) => (
     <path d="M8 50c8-28 16-28 24 0s16 28 24 0 16-28 24 0 8 14 12 14" />
   </g>
 );
-const Sparkle = ({ c }) => <path d="M50 6c5 30 14 39 44 44-30 5-39 14-44 44-5-30-14-39-44-44 30-5 39-14 44-44Z" fill={c} />;
+const Keys = ({ c }) => (
+  <g>
+    <rect x="8" y="24" width="84" height="56" rx="8" fill="#fff" stroke={c} strokeWidth="5" />
+    <path d="M29 26v52M50 26v52M71 26v52" stroke={c} strokeWidth="3" />
+    <rect x="22" y="26" width="13" height="30" rx="2" fill="#3b2a6b" />
+    <rect x="43.5" y="26" width="13" height="30" rx="2" fill="#3b2a6b" />
+    <rect x="65" y="26" width="13" height="30" rx="2" fill="#3b2a6b" />
+  </g>
+);
+const Drum = ({ c }) => (
+  <g>
+    <path d="M14 40v32c0 9 16 16 36 16s36-7 36-16V40Z" fill={c} />
+    <path d="M26 52v28M50 56v30M74 52v28" stroke="#fff" strokeWidth="3" opacity="0.5" />
+    <ellipse cx="50" cy="40" rx="36" ry="14" fill="#fff" stroke="#3b2a6b" strokeWidth="5" />
+    <path d="M30 34 8 12M70 34 92 12" stroke="#3b2a6b" strokeWidth="5" strokeLinecap="round" />
+  </g>
+);
 const Speaker = ({ c }) => (
   <g>
     <path d="M14 38h18l24-20v64L32 62H14Z" fill={c} />
     <path d="M66 36c8 8 8 20 0 28M76 26c14 14 14 34 0 48" fill="none" stroke={c} strokeWidth="6" strokeLinecap="round" />
   </g>
 );
-const Heart = ({ c }) => <path d="M50 86C22 66 8 50 8 33a21 21 0 0 1 42-6 21 21 0 0 1 42 6c0 17-14 33-42 53Z" fill={c} />;
-
 // Two rings around the form: [component, colour, angle in degrees, size in px, tilt].
 // Angle 0 is to the right of the form, 90 is below it.
 const INNER = [
-  [Beamed, PURPLE, 270, 104, -6], [Mic, PINK, 306, 92, 16], [Sparkle, YELLOW, 338, 46, 0], [Vinyl, ORANGE, 8, 108, 0],
-  [Note, TEAL, 40, 84, 12], [Bars, PINK, 68, 96, 0], [Headphones, YELLOW, 100, 100, -8], [Sparkle, VIOLET, 126, 40, 0],
-  [Speaker, BLUE, 150, 88, -10], [Note, PINK, 182, 92, -14], [Heart, ORANGE, 212, 58, -12], [Wave, TEAL, 238, 104, -8],
+  [Beamed, PURPLE, 270, 100, -6], [Mic, PINK, 300, 88, 16], [Keys, TEAL, 330, 84, 8], [Vinyl, ORANGE, 2, 100, 0],
+  [Note, TEAL, 32, 82, 12], [Bars, PINK, 62, 92, 0], [Headphones, YELLOW, 92, 96, -8], [Drum, ORANGE, 122, 86, 6],
+  [Speaker, BLUE, 150, 84, -10], [Note, PINK, 180, 88, -14], [Keys, PURPLE, 210, 80, -10], [Wave, TEAL, 240, 100, -8],
 ];
 const OUTER = [
-  [Note, YELLOW, 288, 62, 14], [Sparkle, PINK, 322, 38, 0], [Wave, VIOLET, 350, 86, 10], [Beamed, TEAL, 22, 78, 8],
-  [Sparkle, YELLOW, 52, 34, 0], [Vinyl, PINK, 84, 76, 0], [Note, PURPLE, 114, 66, -10], [Bars, TEAL, 142, 78, 0],
-  [Sparkle, ORANGE, 166, 36, 0], [Headphones, VIOLET, 196, 80, 10], [Mic, TEAL, 226, 72, -14], [Sparkle, BLUE, 254, 34, 0],
+  [Note, YELLOW, 285, 60, 14], [Drum, VIOLET, 318, 66, -8], [Wave, VIOLET, 348, 84, 10], [Beamed, TEAL, 18, 76, 8],
+  [Note, ORANGE, 46, 54, -12], [Vinyl, PINK, 76, 72, 0], [Note, PURPLE, 106, 64, -10], [Bars, TEAL, 136, 76, 0],
+  [Beamed, PINK, 164, 62, -8], [Headphones, VIOLET, 194, 78, 10], [Mic, TEAL, 224, 70, -14], [Speaker, YELLOW, 254, 60, 8],
 ];
 
 function Ring({ items, className }) {

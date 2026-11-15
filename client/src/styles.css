@@ -33,7 +33,7 @@ code { background: var(--panel-2); padding: 0.1em 0.35em; border-radius: 4px; fo
 .center { display: grid; place-items: center; min-height: 50vh; }
 
 .topbar { display: flex; align-items: center; gap: 1.25rem; padding: 0.85rem 1.5rem; }
-.brand { font-weight: 800; font-size: 1.6rem; letter-spacing: -0.03em; line-height: 1; color: var(--accent); text-decoration: none; }
+.brand { padding: 0.1em 0; font-weight: 800; font-size: 1.6rem; line-height: 1.4; white-space: nowrap; color: var(--accent); text-decoration: none; }
 .topbar-divider { width: 1px; height: 1.6rem; background: var(--border); }
 .topbar nav { display: flex; gap: 0.25rem; align-items: center; }
 .topbar nav a { padding: 0.4rem 0.75rem; border-radius: 8px; color: var(--text); font-weight: 500; text-decoration: none; }
@@ -172,10 +172,11 @@ select { font: inherit; font-size: 0.9rem; color: var(--text); background: var(-
 
 /* ---------- Log in / sign up screen: centred card inside a ring of music ---------- */
 .auth-page {
-  --ring-x: clamp(300px, 30vw, 460px); /* inner ring radius, horizontal */
-  --ring-y: clamp(322px, 46vh, 430px); /* inner ring radius, vertical */
+  --ring-x: clamp(470px, 38vw, 620px); /* inner ring radius, horizontal */
+  --ring-y: clamp(288px, 41vh, 365px); /* inner ring radius, vertical */
   position: fixed; inset: 0; z-index: 5; overflow: hidden auto;
-  display: grid; place-items: center; padding: 1.5rem;
+  /* flex + auto margins centres the card but never pushes its top off-screen */
+  display: flex; padding: 1.5rem;
   background:
     radial-gradient(circle at 15% 12%, #ffe3f3 0, transparent 34%),
     radial-gradient(circle at 88% 20%, #fff1c9 0, transparent 30%),
@@ -191,23 +192,27 @@ select { font: inherit; font-size: 0.9rem; color: var(--text); background: var(-
   top: calc(50% + var(--sin) * var(--ring-y));
   translate: -50% -50%;
   rotate: var(--tilt);
-  filter: drop-shadow(0 6px 10px rgba(76, 29, 149, 0.16));
+  filter: saturate(0.62) drop-shadow(0 5px 9px rgba(76, 29, 149, 0.12));
+  opacity: 0.85;
   animation: auth-float 6s ease-in-out infinite alternate;
 }
 .auth-piece.outer {
-  left: calc(50% + var(--cos) * var(--ring-x) * 1.62);
-  top: calc(50% + var(--sin) * var(--ring-y) * 1.5);
-  opacity: 0.85;
+  left: calc(50% + var(--cos) * var(--ring-x) * 1.3);
+  top: calc(50% + var(--sin) * var(--ring-y) * 1.42);
+  opacity: 0.7;
 }
 @keyframes auth-float { from { transform: translateY(-7px) rotate(-3deg); } to { transform: translateY(7px) rotate(3deg); } }
 .auth-bars rect { transform-box: fill-box; transform-origin: bottom; animation: auth-beat 1.1s ease-in-out infinite alternate; }
 @keyframes auth-beat { from { transform: scaleY(0.5); } to { transform: scaleY(1); } }
 
-.auth-card { position: relative; z-index: 1; width: 100%; max-width: 25rem; margin: 0; padding: 2rem 2rem 1.6rem; background: #fff; border: 2px solid #e6dafd; border-radius: 28px; box-shadow: 0 24px 60px rgba(91, 33, 182, 0.2); text-align: center; }
-.auth-brand { margin: 0 0 0.6rem; font-family: var(--font-title); font-size: 2.5rem; font-weight: 800; line-height: 1.1; background: linear-gradient(90deg, #7c3aed, #ec4899 60%, #fb923c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.auth-card { position: relative; z-index: 1; width: 100%; max-width: 46rem; margin: auto; padding: 1.8rem 2.5rem 1.5rem; background: #fff; border: 2px solid #e6dafd; border-radius: 28px; box-shadow: 0 24px 60px rgba(91, 33, 182, 0.2); text-align: center; }
+/* inline-block with generous line-height and padding: the gradient is clipped to the text box, so descenders (the "g") need room */
+.auth-brand { display: inline-block; margin: 0 0 0.2rem; padding: 0.1em 0.25em 0.2em; font-family: var(--font-title); font-size: 2.5rem; font-weight: 800; line-height: 1.5; background: linear-gradient(90deg, #7c3aed, #ec4899 60%, #fb923c); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .auth-page h1 { margin: 0 0 0.3rem; font-size: 1.6rem; font-weight: 700; color: var(--text); }
 .auth-tagline { margin: 0 0 1.5rem; color: var(--muted); font-size: 0.95rem; }
 .auth-card form { text-align: left; }
+.auth-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+.auth-fields > .auth-error { grid-column: 1 / -1; }
 .auth-box { margin-bottom: 0.85rem; padding: 0.6rem 0.85rem 0.55rem; border: 2px solid var(--border); border-radius: 14px; background: #fff; transition: border-color 0.15s, box-shadow 0.15s; }
 .auth-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.14); }
 .auth-box label { display: block; margin-bottom: 0.15rem; font-size: 0.8rem; font-weight: 600; color: var(--accent); }
@@ -232,7 +237,8 @@ select { font: inherit; font-size: 0.9rem; color: var(--text); background: var(-
 .auth-page :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .auth-piece, .auth-bars rect { animation: none; } .auth-submit { transition: none; } }
 /* Not enough room for a ring around the card on small screens: keep a few pieces in the corners. */
-@media (max-width: 760px), (max-height: 640px) {
+@media (max-width: 680px) { .auth-fields { grid-template-columns: 1fr; } .auth-card { padding: 1.5rem 1.3rem 1.3rem; } }
+@media (max-width: 1040px), (max-height: 600px) {
   .auth-piece.inner { display: none; }
   .auth-piece.outer { left: calc(50% + var(--cos) * 52vw); top: calc(50% + var(--sin) * 50vh); opacity: 0.5; }
 }

@@ -54,6 +54,7 @@ export default function AuthPage() {
           <p className="auth-tagline">Sing your way to a new language.</p>
 
           <form onSubmit={submit}>
+           <div className="auth-fields">
             <div className="auth-box">
               <label htmlFor="auth-email">Email</label>
               <input id="auth-email" type="email" placeholder="Enter your email..." value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
@@ -77,6 +78,7 @@ export default function AuthPage() {
               </div>
             </div>
 
+           </div>
             {error && <p className="auth-error" role="alert">{error}</p>}
 
             <button className="auth-submit" disabled={busy}>
