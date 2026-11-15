@@ -5,7 +5,7 @@ import { IndiaFlag, MexicoFlag, NepalFlag, SpainFlag } from '../components/Flags
 
 const CARDS = [
   { code: 'es', flags: [<MexicoFlag key="mx" />, <SpainFlag key="es" />], blurb: 'Sing along to songs from Mexico, Spain and across Latin America.' },
-  { code: 'hi', flags: [<IndiaFlag key="in" />, <NepalFlag key="np" />], blurb: 'Sing along in Hindi, with every line shown in Devanagari and in Latin letters.' },
+  { code: 'hi', flags: [<IndiaFlag key="in" />, <NepalFlag key="np" />], blurb: 'Learn Hindi songs and their pronunciation through romanized lyrics. No new script to learn first, just read and sing.' },
 ];
 
 export default function LanguagePage() {

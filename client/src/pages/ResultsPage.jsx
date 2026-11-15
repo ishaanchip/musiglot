@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { api, formatScore, scoreLevel } from '../api.js';
+import { api, formatScore, hasDevanagari, scoreLevel } from '../api.js';
 
 function Score({ label, value }) {
   return (
@@ -29,7 +29,7 @@ export default function ResultsPage() {
   if (error) return <main className="narrow"><p className="error">{error}</p><Link to="/">Back to songs</Link></main>;
   if (!data) return <main className="center muted">Loading results…</main>;
   const { attempt, song } = data;
-  const isHindi = song.language === 'hi';
+  const isHindi = song.language === 'hi' && song.lines.some((l) => hasDevanagari(l.original));
   const partial = attempt.linesAttempted != null && attempt.linesAttempted < attempt.linesTotal;
 
   return (

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { hasDevanagari } from '../api.js';
 
 function Words({ words, field, time, state }) {
   return words.map((w, i) => {
@@ -14,7 +15,8 @@ function Words({ words, field, time, state }) {
 /** Lines start grey and light up in sync with playback (word by word when timings exist). */
 export default function LyricsPanel({ song, time, started, paused, selectedIndex, onSelect }) {
   const activeRef = useRef(null);
-  const isHindi = song.language === 'hi';
+  // Two columns (script + romanized) only when the lyrics are actually in Devanagari.
+  const isHindi = song.language === 'hi' && song.lines.some((l) => hasDevanagari(l.original));
   // Active = the latest line that has started. Before the first line, nothing is active.
   let activeIndex = -1;
   for (const line of song.lines) if (time >= line.start) activeIndex = line.index;

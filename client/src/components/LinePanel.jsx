@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { speak, stopSpeaking } from '../audio/tts.js';
+import { hasDevanagari } from '../api.js';
 
 /** Right-side explainer for one line: glosses, translation, hear it sung / spoken. */
 export default function LinePanel({ line, song, onClose, onJump }) {
   const [wordIndex, setWordIndex] = useState(null);
   const [note, setNote] = useState('');
   const clipRef = useRef(null);
-  const isHindi = song.language === 'hi';
+  const isHindi = song.language === 'hi' && hasDevanagari(line.original);
   const word = wordIndex != null ? line.words[wordIndex] : null;
 
   const stopAll = () => {

@@ -31,6 +31,9 @@ export async function api(path, { method = 'GET', body, formData } = {}) {
 
 export const LANGUAGES = { es: { name: 'Spanish', native: 'Español', speech: 'es-MX' }, hi: { name: 'Hindi', native: 'हिन्दी', speech: 'hi-IN' } };
 
+/** True when text is written in Devanagari, so a separate romanized version is worth showing. */
+export const hasDevanagari = (text = '') => /[\u0900-\u097F]/.test(text);
+
 export const formatDuration = (sec = 0) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
 export const formatScore = (x) => (x == null ? '–' : (Math.round(x * 10) / 10).toFixed(1));
 /** good / ok / poor, used for colour-coding scores. */
