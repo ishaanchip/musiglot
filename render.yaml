@@ -1,0 +1,29 @@
+# Render blueprint: one web service that serves the app, the API and the media.
+# Dashboard -> New -> Blueprint -> pick this repo and branch.
+# Songs are processed on your own computer (pipeline/) and their media copied
+# onto the disk below; see "Hosting it" in the README.
+services:
+  - type: web
+    name: musiglot
+    runtime: node
+    plan: starter # a persistent disk needs a paid instance
+    buildCommand: npm --prefix server ci && npm --prefix client ci && npm --prefix client run build
+    startCommand: npm --prefix server start
+    healthCheckPath: /api/health
+    disk:
+      name: media
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: MEDIA_DIR
+        value: /var/data/media
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false # paste your MongoDB Atlas connection string
+      - key: INVITE_CODE
+        sync: false # sign-up code you share with invitees
+      - key: ANTHROPIC_API_KEY
+        sync: false # optional: Claude-written feedback

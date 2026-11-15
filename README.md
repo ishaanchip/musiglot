@@ -55,6 +55,30 @@ cloudflared tunnel --url http://localhost:4000
 
 Share the `https://...trycloudflare.com` address it prints, plus the invite code. The address changes every time you restart the tunnel.
 
+## Hosting it (always on)
+
+`render.yaml` describes a single [Render](https://render.com) web service with a 1 GB persistent disk. The server serves the built client, the API and `/media` from one address. The pipeline is not hosted: you run it on your own computer against the hosted database and copy the media up.
+
+1. **Database.** Create a free MongoDB Atlas cluster, add a database user, allow access from anywhere (`0.0.0.0/0`) under Network Access, and copy the connection string with `/musiglot` as the database name.
+2. **Service.** In Render: New -> Blueprint, pick this repository and branch. When asked, paste `MONGODB_URI` and choose an `INVITE_CODE`. `JWT_SECRET` is generated for you.
+3. **Songs.** For each song, write it to the hosted database from your computer:
+
+```bash
+MONGODB_URI="<atlas connection string>" .venv/bin/python pipeline/process_song.py songs/<slug>
+```
+
+4. **Media.** Add your SSH key in Render (Account Settings -> SSH Public Keys), copy the service's SSH address from its Connect menu, then:
+
+```bash
+ssh <service-ssh-address> "mkdir -p /var/data/media"
+```
+
+```bash
+scp -r media/<slug> <service-ssh-address>:/var/data/media/
+```
+
+Repeat steps 3 and 4 whenever you add a song. Recordings of takes are written to the same disk under `media/recordings/`.
+
 ## Adding a song
 
 1. Make a folder `songs/<slug>/` containing:
