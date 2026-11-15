@@ -205,10 +205,10 @@ input { font: inherit; color: var(--text); background: var(--bg); border: 1px so
 select { font: inherit; font-size: 0.9rem; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.5rem; max-width: 17rem; }
 .line-result.skipped { opacity: 0.5; }
 
-/* ---------- Log in / sign up screen: white card on a colour gradient ---------- */
+/* ---------- Log in / sign up screen: white card on a color gradient ---------- */
 .auth-page {
   position: fixed; inset: 0; z-index: 5; overflow: hidden auto;
-  /* flex + auto margins centres the card but never pushes its top off-screen */
+  /* flex + auto margins centers the card but never pushes its top off-screen */
   display: flex; padding: 1.5rem;
   background: linear-gradient(165deg, #f2635a 0%, #ec5578 20%, #cf57b4 40%, #9a68e6 58%, #5c8ff0 76%, #49d0e8 100%);
   color: var(--text);

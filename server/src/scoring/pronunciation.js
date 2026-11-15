@@ -4,7 +4,7 @@
 //   azure    - Azure Speech Pronunciation Assessment against the reference text (best)
 //   openai   - Whisper API transcription + text similarity to the reference
 //   local    - same, but with local faster-whisper via pipeline/asr.py
-//   estimate - no recognizer: only checks that the user was vocalising during
+//   estimate - no recognizer: only checks that the user was vocalizing during
 //              the line. NOT real pronunciation scoring; the UI labels it.
 import { spawn } from 'node:child_process';
 import path from 'node:path';

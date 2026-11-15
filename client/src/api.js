@@ -36,5 +36,5 @@ export const hasDevanagari = (text = '') => /[\u0900-\u097F]/.test(text);
 
 export const formatDuration = (sec = 0) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
 export const formatScore = (x) => (x == null ? '–' : (Math.round(x * 10) / 10).toFixed(1));
-/** good / ok / poor, used for colour-coding scores. */
+/** good / ok / poor, used for color-coding scores. */
 export const scoreLevel = (x) => (x == null ? 'none' : x >= 7 ? 'good' : x >= 4 ? 'ok' : 'poor');

@@ -12,7 +12,7 @@ function Words({ words, field, time, state }) {
   });
 }
 
-/** Lines start grey and light up in sync with playback (word by word when timings exist). */
+/** Lines start gray and light up in sync with playback (word by word when timings exist). */
 export default function LyricsPanel({ song, time, started, paused, selectedIndex, onSelect }) {
   const activeRef = useRef(null);
   // Two columns (script + romanized) only when the lyrics are actually in Devanagari.

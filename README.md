@@ -153,19 +153,19 @@ With neither Azure nor OpenAI configured, the pronunciation score is an estimate
 
 The LLM is Anthropic only in this version. The content step also asks the API to reroute to a fallback model if the primary declines a request; set `ANTHROPIC_FALLBACKS=0` to turn that off.
 
-## Practising a song
+## Practicing a song
 
 - **Listen first** plays the original (singer and music) with the lyrics and pitch lane moving in sync. Nothing is recorded and the microphone is not opened. Pause to click a line and study it.
 - **Start singing** records you, starting from the beginning of the song or of the section you chose (or from wherever you moved the slider).
 - **Skipping around.** Drag the slider, use the 10-second buttons, or press **Next line** to jump over an instrumental break. This works while listening and while singing. When a line is open in the side panel, **Jump to this line** moves there.
-- **Practise a section.** Choose a "from" and "to" line. Listening and singing then start two seconds before the first line and stop after the last one; a take ends and is graded when it reaches the end of the section.
+- **Practice a section.** Choose a "from" and "to" line. Listening and singing then start two seconds before the first line and stop after the last one; a take ends and is graded when it reaches the end of the section.
 - **Guide vocals** decides whether you hear the original singer while you sing. Off gives you the backing track only; on makes it easier to follow along. You can switch it during a take, and the choice is remembered. Wear headphones so the microphone does not pick the singer up.
 
 ## How scoring works
 
 - **Recording.** The browser records the mic as PCM laid out on the song's timeline (pausing pauses capture), downsamples to 16 kHz mono WAV, and uploads it with the live pitch track when you press End or the song finishes.
 - **Pitch and timing** (`server/src/scoring/pitch.js`). Your pitch is tracked live with `pitchy`. The server finds the single key shift (mod 12) that best explains your whole take, so singing in another octave or key is fine, removes a constant device lag, then gives each reference frame credit if you sang the right pitch class within ±200 ms (full credit within 1 semitone, none beyond 3). Lines are scored separately and averaged.
-- **Only what you sang counts** (`server/src/scoring/coverage.js`). The browser reports which parts of the song it recorded. A line is graded if at least half of it was recorded; lines you never reached, because you ended early, skipped ahead or practised a section, are marked "Not sung" and left out of both scores. A line you were recorded on but stayed silent for still scores zero.
+- **Only what you sang counts** (`server/src/scoring/coverage.js`). The browser reports which parts of the song it recorded. A line is graded if at least half of it was recorded; lines you never reached, because you ended early, skipped ahead or practiced a section, are marked "Not sung" and left out of both scores. A line you were recorded on but stayed silent for still scores zero.
 - **Pronunciation** (`server/src/scoring/pronunciation.js`). Each line is sliced out of the recording by its timestamps and scored with Azure, or the whole take is transcribed with Whisper and compared with the lyrics.
 - **Feedback** (`server/src/scoring/feedback.js`). Per-line results go to Claude for 2–3 "went well" and 2–3 "improve" bullets that name real lines and words.
 
@@ -221,7 +221,7 @@ Playback, mic capture (AudioWorklet) and WAV encoding use the Web Audio API dire
 
 ## Known limits
 
-- Word alignment matches Whisper word timestamps to the lyrics rather than running true phoneme-level forced alignment (WhisperX). Words Whisper misses are interpolated between their neighbours.
+- Word alignment matches Whisper word timestamps to the lyrics rather than running true phoneme-level forced alignment (WhisperX). Words Whisper misses are interpolated between their neighbors.
 - The pitch score absorbs a constant device lag, so it cannot tell "consistently 150 ms late" from audio latency. Per-line timing differences are still reported.
 - Song audio and fetched lyrics are copyrighted, so `.gitignore` keeps everything in `songs/<slug>/` except `meta.json` out of the repo.
 - Out of scope for now: finding or uploading songs in the UI, vocal separation, sheet music, mobile layout polish.

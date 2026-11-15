@@ -123,7 +123,7 @@ def match_tokens(tokens: list[str], asr: list[dict]) -> list[int | None]:
 
 def fill_times(tokens: list[str], known: list[tuple[float, float] | None], lo: float, hi: float) -> list[tuple[float, float]]:
     """Gives every token a (start, end): keeps known times, spreads runs of
-    unknown tokens across the gap between their neighbours by syllable count,
+    unknown tokens across the gap between their neighbors by syllable count,
     and forces the result to be monotonic inside [lo, hi]."""
     n = len(tokens)
     out: list[tuple[float, float] | None] = list(known)

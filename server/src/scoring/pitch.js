@@ -47,7 +47,7 @@ function nearest(track, t, tol) {
   return best;
 }
 
-/** Lag (seconds, user minus reference) that maximises voiced overlap. */
+/** Lag (seconds, user minus reference) that maximizes voiced overlap. */
 function bestLag(refFrames, track, maxLag, step = 0.025) {
   let best = { lag: 0, hits: -1 };
   for (let k = -Math.round(maxLag / step); k <= Math.round(maxLag / step); k++) {

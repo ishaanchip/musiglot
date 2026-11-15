@@ -72,7 +72,7 @@ async function llmFeedback(song, result) {
 Scores are 0-10. Overall pronunciation: ${result.pronunciationScore}. Overall pitch and timing: ${result.pitchScore}.
 Pronunciation scoring method: ${result.pronunciationMethod}${result.pronunciationMethod === 'estimate' ? ' (only detects whether they were singing, so do not make claims about specific sounds)' : ''}.
 timingOffsetMs is positive when they came in late and negative when early. A null score means the line was not scorable.
-They sang ${result.linesAttempted ?? result.perLine.length} of the song's ${result.linesTotal ?? result.perLine.length} lines in this take; only those lines are listed and graded. Practising a section is normal, so do not criticise them for the lines they did not sing.
+They sang ${result.linesAttempted ?? result.perLine.length} of the song's ${result.linesTotal ?? result.perLine.length} lines in this take; only those lines are listed and graded. Practicing a section is normal, so do not criticize them for the lines they did not sing.
 
 Per-line results:
 ${JSON.stringify(summarize(song, result))}

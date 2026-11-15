@@ -97,7 +97,7 @@ export class MicRecorder {
       this.live = null;
       return;
     }
-    // The analysis window is centred half a buffer in the past.
+    // The analysis window is centered half a buffer in the past.
     const t = this.getSongTime() - this.latency - ANALYSIS_SIZE / this.sampleRate / 2;
     if (t < 0) return;
     const midi = Math.round(hzToMidi(hz) * 100) / 100;

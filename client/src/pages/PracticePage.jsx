@@ -27,7 +27,7 @@ export default function PracticePage() {
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState('');
   const [guideOn, setGuideOn] = useState(() => localStorage.getItem(GUIDE_KEY) === '1');
-  // Optional section to practise, as line indexes. null = from the beginning / to the end.
+  // Optional section to practice, as line indexes. null = from the beginning / to the end.
   const [section, setSection] = useState({ from: null, to: null });
   const playerRef = useRef(null);
   const recorderRef = useRef(null);
@@ -50,25 +50,25 @@ export default function PracticePage() {
 
   // Load the song and its reference pitch.
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     api(`/songs/${slug}`)
       .then(async ({ song: s }) => {
-        if (cancelled) return;
+        if (canceled) return;
         setSong(s);
         setPhase('headphones');
         if (s.pitchContour?.path) {
           const res = await fetch(s.pitchContour.path);
-          if (res.ok && !cancelled) setPitch(await res.json());
+          if (res.ok && !canceled) setPitch(await res.json());
         }
       })
       .catch((err) => {
-        if (!cancelled) {
+        if (!canceled) {
           setError(err.message);
           setPhase('error');
         }
       });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [slug]);
 
@@ -318,7 +318,7 @@ export default function PracticePage() {
 
         <div className="options-row">
         <div className="section-picker">
-          <span className="muted">Practise a section:</span>
+          <span className="muted">Practice a section:</span>
           <label>
             from
             <select value={section.from ?? ''} disabled={singing || blocked} onChange={(e) => chooseSection({ ...section, from: e.target.value === '' ? null : Number(e.target.value) })}>
@@ -366,7 +366,7 @@ export default function PracticePage() {
             <li>Press <strong>Start singing</strong> and sing along as each line lights up. Switch on <strong>Guide vocals</strong> if you want the original singer to help.</li>
             <li>Follow the bars in the pitch lane. Your voice is the dot.</li>
             <li><strong>Pause</strong> and click a line to see what it means and hear it.</li>
-            <li>Short on time? Drag the slider, skip ahead, or pick a section to practise.</li>
+            <li>Short on time? Drag the slider, skip ahead, or pick a section to practice.</li>
             <li>Press <strong>End</strong> whenever you like. You are graded only on the lines you sang.</li>
           </ol>
         </aside>

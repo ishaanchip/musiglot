@@ -83,7 +83,7 @@ class Alignment(unittest.TestCase):
         stats = align.align_words([line], asr, rms, times, 20.0)
         self.assertEqual(stats["matchedByAsr"], 2)
         self.assertEqual((line["words"][0]["start"], line["words"][2]["start"]), (2.6, 4.8))
-        self.assertEqual((line["words"][1]["start"], line["words"][1]["end"]), (3.0, 4.8))  # interpolated between neighbours
+        self.assertEqual((line["words"][1]["start"], line["words"][1]["end"]), (3.0, 4.8))  # interpolated between neighbors
 
     def test_lines_from_scratch(self):
         times = np.arange(0, 20, 0.02)
