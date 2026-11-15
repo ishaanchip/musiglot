@@ -136,3 +136,11 @@ input { font: inherit; color: var(--text); background: var(--bg); border: 1px so
 .toggle.disabled { cursor: default; opacity: 0.75; }
 .toggle input { margin-top: 0.3rem; width: 1.05rem; height: 1.05rem; accent-color: var(--accent); }
 .toggle span { display: grid; }
+
+.seek { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.75rem; }
+.seek input[type="range"] { flex: 1; min-width: 6rem; accent-color: var(--accent); padding: 0; }
+.seek button { padding: 0.3rem 0.65rem; font-size: 0.85rem; white-space: nowrap; }
+.section-picker { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-top: 0.75rem; font-size: 0.9rem; }
+.section-picker label { display: flex; align-items: center; gap: 0.4rem; color: var(--muted); }
+select { font: inherit; font-size: 0.9rem; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.5rem; max-width: 17rem; }
+.line-result.skipped { opacity: 0.5; }

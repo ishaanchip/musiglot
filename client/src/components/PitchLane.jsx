@@ -77,9 +77,11 @@ export default function PitchLane({ pitch, getTime, recorderRef }) {
 
       // Singer: recent trail, octave-folded onto the melody so any octave counts.
       const recorder = recorderRef.current;
-      const track = recorder?.track || [];
-      for (let i = track.length - 1; i >= 0 && track[i][0] >= now - PAST_SEC; i--) {
+      // The singer may have skipped around, so look at the newest points rather than assuming time order.
+      const track = recorder?.rawTrack || [];
+      for (let i = track.length - 1; i >= Math.max(0, track.length - 240); i--) {
         const [t, m] = track[i];
+        if (t < now - PAST_SEC || t > now) continue;
         const ref = refAt(t);
         const shown = foldToward(m, ref ?? lastTarget);
         ctx.fillStyle = ref == null ? colors.line : Math.abs(shown - ref) <= 1 ? colors.hit : colors.miss;

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { speak, stopSpeaking } from '../audio/tts.js';
 
 /** Right-side explainer for one line: glosses, translation, hear it sung / spoken. */
-export default function LinePanel({ line, song, onClose }) {
+export default function LinePanel({ line, song, onClose, onJump }) {
   const [wordIndex, setWordIndex] = useState(null);
   const [note, setNote] = useState('');
   const clipRef = useRef(null);
@@ -83,6 +83,7 @@ export default function LinePanel({ line, song, onClose }) {
       <div className="panel-actions">
         <button onClick={hearSung}>Hear it sung</button>
         <button onClick={() => hearSpoken(line.original)}>Hear it spoken (slow)</button>
+        {onJump && <button onClick={() => { stopAll(); onJump(); }}>Jump to this line</button>}
       </div>
       {note && <p className="muted small">{note}</p>}
     </aside>

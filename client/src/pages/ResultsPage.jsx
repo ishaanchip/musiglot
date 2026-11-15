@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { api, formatScore, scoreLevel } from '../api.js';
-
-const METHOD_NOTES = {
-  azure: 'Pronunciation scored by Azure Speech against the lyrics.',
-  openai: 'Pronunciation scored by comparing a Whisper transcription of your singing to the lyrics.',
-  local: 'Pronunciation scored by comparing a local Whisper transcription of your singing to the lyrics.',
-  estimate: 'Rough estimate only: no speech service is configured, so this score reflects whether you sang each line, not how you pronounced it. Add AZURE_SPEECH_KEY or OPENAI_API_KEY for real pronunciation scoring.',
-};
 
 function Score({ label, value }) {
   return (
@@ -26,7 +19,6 @@ const lineAverage = (r) => {
 
 export default function ResultsPage() {
   const { attemptId } = useParams();
-  const location = useLocation();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
 
@@ -38,6 +30,7 @@ export default function ResultsPage() {
   if (!data) return <main className="center muted">Loading results…</main>;
   const { attempt, song } = data;
   const isHindi = song.language === 'hi';
+  const partial = attempt.linesAttempted != null && attempt.linesAttempted < attempt.linesTotal;
 
   return (
     <main className="results">
@@ -48,8 +41,11 @@ export default function ResultsPage() {
         <Score label="Pronunciation" value={attempt.pronunciationScore} />
         <Score label="Pitch and timing" value={attempt.pitchScore} />
       </div>
-      <p className={`muted small ${attempt.pronunciationMethod === 'estimate' ? 'warn' : ''}`}>{METHOD_NOTES[attempt.pronunciationMethod]}</p>
-      {location.state?.warning && <p className="warn small">{location.state.warning}</p>}
+      {partial && (
+        <p className="muted small">
+          Graded on the {attempt.linesAttempted} of {attempt.linesTotal} lines you sang. Lines you skipped do not count against you.
+        </p>
+      )}
 
       <div className="feedback">
         <section className="card">
@@ -71,7 +67,7 @@ export default function ResultsPage() {
           const line = song.lines.find((l) => l.index === r.index);
           const weak = (r.words || []).filter((w) => w.score < 6);
           return (
-            <li key={r.index} className={`card line-result ${scoreLevel(lineAverage(r))}`}>
+            <li key={r.index} className={`card line-result ${r.attempted === false ? 'skipped' : scoreLevel(lineAverage(r))}`}>
               <div>
                 <div lang={song.language}>{line?.original}</div>
                 {isHindi && line?.romanized && <div className="romanized">{line.romanized}</div>}
@@ -82,10 +78,14 @@ export default function ResultsPage() {
                   {Math.abs(r.timingOffsetMs ?? 0) >= 200 && <> · {r.timingOffsetMs > 0 ? 'late' : 'early'} by {Math.abs(r.timingOffsetMs)} ms</>}
                 </div>
               </div>
-              <div className="line-scores">
-                <span className={`pill ${scoreLevel(r.pronunciation)}`}>Pron {formatScore(r.pronunciation)}</span>
-                <span className={`pill ${scoreLevel(r.pitch)}`}>Pitch {formatScore(r.pitch)}</span>
-              </div>
+              {r.attempted === false ? (
+                <div className="line-scores"><span className="pill">Not sung</span></div>
+              ) : (
+                <div className="line-scores">
+                  <span className={`pill ${scoreLevel(r.pronunciation)}`}>Pron {formatScore(r.pronunciation)}</span>
+                  <span className={`pill ${scoreLevel(r.pitch)}`}>Pitch {formatScore(r.pitch)}</span>
+                </div>
+              )}
             </li>
           );
         })}

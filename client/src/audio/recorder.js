@@ -29,7 +29,7 @@ export const hzToMidi = (hz) => 69 + 12 * Math.log2(hz / 440);
 export class MicRecorder {
   constructor() {
     this.segments = []; // [{ songStart, chunks: Float32Array[] }]
-    this.track = []; // [[songTime, midi], ...] voiced frames only
+    this.rawTrack = []; // [[songTime, midi, segmentIndex], ...] voiced frames only
     this.live = null; // { t, midi } for the newest voiced frame, or null
     this.capturing = false;
   }
@@ -101,8 +101,32 @@ export class MicRecorder {
     const t = this.getSongTime() - this.latency - ANALYSIS_SIZE / this.sampleRate / 2;
     if (t < 0) return;
     const midi = Math.round(hzToMidi(hz) * 100) / 100;
-    this.track.push([Math.round(t * 1000) / 1000, midi]);
+    this.rawTrack.push([Math.round(t * 1000) / 1000, midi, this.segments.length - 1]);
     this.live = { t, midi };
+  }
+
+  /** [start, end] in song seconds of each recorded stretch (a new one starts after every pause or skip). */
+  segmentRanges() {
+    return this.segments.map((seg) => {
+      const length = seg.chunks.reduce((n, c) => n + c.length, 0);
+      return [seg.songStart, seg.songStart + length / this.sampleRate];
+    });
+  }
+
+  /** Stretches of the song that were recorded, for the server to grade only those. */
+  coverage() {
+    return this.segmentRanges().filter(([a, b]) => b - a > 0.05).map(([a, b]) => [Math.round(a * 1000) / 1000, Math.round(b * 1000) / 1000]);
+  }
+
+  /**
+   * Pitch track for scoring. If a part of the song was sung more than once
+   * (the singer skipped back), only the latest pass counts, matching buildWav.
+   */
+  get track() {
+    const ranges = this.segmentRanges();
+    return this.rawTrack
+      .filter(([t, , seg]) => !ranges.some(([a, b], j) => j > seg && t >= a && t <= b))
+      .map(([t, midi]) => [t, midi]);
   }
 
   /** 16 kHz mono 16-bit WAV on the song's timeline. */

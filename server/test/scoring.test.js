@@ -84,3 +84,15 @@ test('transcript scoring assigns words to lines and scores them', () => {
   const fb = templateFeedback(song, { pronunciationScore: 5, pitchScore: 5, perLine: r.map((x) => ({ ...x, pitch: x.index ? 0 : 9, timingOffsetMs: 0 })) });
   assert.ok(fb.wentWell.length >= 2 && fb.improve.length >= 2);
 });
+
+test('only lines covered by the recording are graded', async () => {
+  const { attemptedLines, normalizeCoverage } = await import('../src/scoring/coverage.js');
+  const song = [0, 1, 2, 3].map((i) => ({ index: i, start: i * 10, end: i * 10 + 8 }));
+  // Sang 0-9 s, skipped ahead, sang 21-24 s (less than half of line 2), then 30-36 s.
+  const coverage = normalizeCoverage([[30, 36], [0, 5], [4, 9], [21, 24], [7, 'x']], 0);
+  assert.deepEqual(coverage, [[0, 9], [21, 24], [30, 36]]);
+  assert.deepEqual(attemptedLines(song, coverage).map((l) => l.index), [0, 3]);
+  // Older clients send no coverage: fall back to the length of the recording.
+  assert.deepEqual(attemptedLines(song, normalizeCoverage(undefined, 19)).map((l) => l.index), [0, 1]);
+  assert.deepEqual(normalizeCoverage([], 0), []);
+});

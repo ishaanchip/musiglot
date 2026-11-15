@@ -8,11 +8,14 @@ const attemptSchema = new mongoose.Schema({
   pitchScore: Number, // 0-10
   // azure | openai | local | estimate ("estimate" = voicing only, not real pronunciation)
   pronunciationMethod: String,
+  linesAttempted: Number, // lines the take covered; only these count toward the scores
+  linesTotal: Number,
   transposition: Number, // semitones (0-12) the user sang away from the original key
   perLine: [
     {
       _id: false,
       index: Number,
+      attempted: { type: Boolean, default: true }, // false = the take never reached this line
       pronunciation: Number, // 0-10 or null if the line was not sung / not scorable
       pitch: Number, // 0-10 or null
       timingOffsetMs: Number, // + = user late, - = early

@@ -11,6 +11,7 @@ import { parseWav } from '../scoring/wav.js';
 import { scorePitch } from '../scoring/pitch.js';
 import { scorePronunciation } from '../scoring/pronunciation.js';
 import { writeFeedback } from '../scoring/feedback.js';
+import { attemptedLines, normalizeCoverage } from '../scoring/coverage.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -29,7 +30,8 @@ async function loadReferencePitch(song) {
   }
 }
 
-// multipart/form-data: songId, pitchTrack (JSON [[t, midi], ...]), recording (16 kHz mono WAV)
+// multipart/form-data: songId, pitchTrack (JSON [[t, midi], ...]), recording (16 kHz mono WAV),
+// coverage (JSON [[startSec, endSec], ...]: the parts of the song that were recorded)
 router.post('/', upload.single('recording'), async (req, res) => {
   const { songId } = req.body;
   if (!mongoose.isValidObjectId(songId)) return res.status(400).json({ error: 'songId is required' });
@@ -39,13 +41,22 @@ router.post('/', upload.single('recording'), async (req, res) => {
 
   let wav;
   let userTrack;
+  let coverage;
   try {
     wav = parseWav(req.file.buffer);
     userTrack = JSON.parse(req.body.pitchTrack || '[]');
     if (!Array.isArray(userTrack)) throw new Error('pitchTrack must be an array');
+    coverage = normalizeCoverage(JSON.parse(req.body.coverage || '[]'), wav.samples.length / wav.sampleRate);
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
+
+  // Grade only the lines the take actually covered (it may start late, end early or skip around).
+  const sungLines = attemptedLines(song.lines, coverage);
+  if (!sungLines.length) {
+    return res.status(400).json({ error: 'That take did not cover a full line, so there is nothing to grade. Sing at least one line before ending.' });
+  }
+  const sungSong = { ...song, lines: sungLines };
 
   const attemptId = new mongoose.Types.ObjectId();
   const recordingsDir = path.join(config.mediaDir, 'recordings');
@@ -54,14 +65,15 @@ router.post('/', upload.single('recording'), async (req, res) => {
   await fs.writeFile(wavPath, req.file.buffer);
 
   const reference = await loadReferencePitch(song);
-  const pitch = scorePitch({ reference, userTrack, lines: song.lines });
-  const pron = await scorePronunciation({ wav, wavBuffer: req.file.buffer, wavPath, song });
+  const pitch = scorePitch({ reference, userTrack, lines: sungLines });
+  const pron = await scorePronunciation({ wav, wavBuffer: req.file.buffer, wavPath, song: sungSong });
 
   const perLine = song.lines.map((line) => {
     const p = pitch.perLine.find((x) => x.index === line.index) || {};
     const q = pron.perLine.find((x) => x.index === line.index) || {};
     return {
       index: line.index,
+      attempted: sungLines.includes(line),
       pronunciation: q.pronunciation ?? null,
       pitch: p.pitch ?? null,
       timingOffsetMs: p.timingOffsetMs ?? null,
@@ -73,10 +85,13 @@ router.post('/', upload.single('recording'), async (req, res) => {
     pronunciationScore: pron.score,
     pitchScore: pitch.score,
     pronunciationMethod: pron.method,
+    linesAttempted: sungLines.length,
+    linesTotal: song.lines.length,
     transposition: pitch.transposition,
     perLine,
   };
-  const feedback = await writeFeedback(song, result);
+  // Feedback only talks about lines that were sung.
+  const feedback = await writeFeedback(song, { ...result, perLine: perLine.filter((l) => l.attempted) });
 
   const attempt = await Attempt.create({
     _id: attemptId,

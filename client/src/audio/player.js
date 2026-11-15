@@ -63,10 +63,10 @@ export class SongPlayer {
     this.resync(true); // seeking is free while paused, so the next play starts lined up
   }
 
-  rewind() {
-    this.pause();
-    this.backing.currentTime = 0;
-    if (!this.guideBroken) this.guide.currentTime = 0;
+  /** Jump to a time (seconds). Keeps playing if it was playing. */
+  seek(time) {
+    this.backing.currentTime = time;
+    if (!this.guideBroken) this.guide.currentTime = time;
   }
 
   destroy() {
