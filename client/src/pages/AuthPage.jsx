@@ -47,10 +47,11 @@ export default function AuthPage() {
 
   return (
     <div className="auth-page">
-      <main className="auth-form-side">
-        <div className="auth-column">
+      <AuthArt />
+      <main className="auth-card">
           <p className="auth-brand">Musiglot</p>
           <h1>{isLogin ? 'Welcome back!' : 'Create your account'}</h1>
+          <p className="auth-tagline">Sing your way to a new language.</p>
 
           <form onSubmit={submit}>
             <div className="auth-box">
@@ -104,16 +105,7 @@ export default function AuthPage() {
               {isLogin ? 'Sign up' : 'Log in'}
             </button>
           </p>
-        </div>
       </main>
-
-      <aside className="auth-art-side">
-        <AuthArt />
-        <div className="auth-caption">
-          <strong>Sing your way to a new language</strong>
-          <span>Follow the lyrics, hit the notes, and learn Spanish or Hindi one song at a time.</span>
-        </div>
-      </aside>
     </div>
   );
 }
