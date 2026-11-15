@@ -64,6 +64,12 @@ To add `full.mp3` to a song you already processed, without redoing the other ste
 .venv/bin/python pipeline/process_song.py songs/<slug> --full-only
 ```
 
+To remove a song from the app (database entry, its attempts and its generated media; your files in `songs/<slug>/` stay):
+
+```bash
+.venv/bin/python pipeline/remove_song.py <slug>
+```
+
 The run prints the chosen LRCLIB ID, whether it shifted the timing, and the first few lines with word timestamps so you can sanity-check them. Useful flags: `--no-db` (write `media/<slug>/song.json` only), `--skip-llm`, `--refresh` (ignore cached LRCLIB / Whisper / LLM results).
 
 ### What the pipeline does
