@@ -21,4 +21,7 @@ export const config = {
   whisperModel: env.OPENAI_WHISPER_MODEL || 'whisper-1',
   pronunciationProvider: env.PRONUNCIATION_PROVIDER || 'auto',
   pythonBin: env.PYTHON_BIN || 'python3',
+  // When set, new accounts can only be created with this code (invite-only demo).
+  inviteCode: env.INVITE_CODE || '',
+  clientDist: path.join(ROOT, 'client', 'dist'),
 };

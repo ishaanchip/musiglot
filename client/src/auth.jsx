@@ -18,8 +18,8 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const authenticate = async (mode, email, password, remember = true) => {
-    const d = await api(`/auth/${mode}`, { method: 'POST', body: { email, password } });
+  const authenticate = async (mode, email, password, remember = true, inviteCode = '') => {
+    const d = await api(`/auth/${mode}`, { method: 'POST', body: { email, password, inviteCode } });
     setToken(d.token, remember);
     setUser(d.user);
   };

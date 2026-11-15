@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
 
@@ -21,6 +21,12 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
+  const [inviteCode, setInviteCode] = useState('');
+  const [inviteOnly, setInviteOnly] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/health').then((r) => r.json()).then((d) => setInviteOnly(Boolean(d.inviteOnly))).catch(() => {});
+  }, []);
 
   if (user) return <Navigate to={location.state?.from || '/'} replace />;
 
@@ -31,7 +37,7 @@ export default function AuthPage() {
     setNote('');
     setBusy(true);
     try {
-      await authenticate(mode, email, password, remember);
+      await authenticate(mode, email, password, remember, inviteCode);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -77,6 +83,12 @@ export default function AuthPage() {
             </div>
 
            </div>
+            {!isLogin && inviteOnly && (
+              <div className="auth-box">
+                <label htmlFor="auth-invite">Invite code</label>
+                <input id="auth-invite" type="text" placeholder="Enter the code you were given..." value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} required autoComplete="off" />
+              </div>
+            )}
             {error && <p className="auth-error" role="alert">{error}</p>}
 
             <button className="auth-submit" disabled={busy}>

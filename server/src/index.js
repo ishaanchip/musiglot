@@ -9,5 +9,6 @@ createApp().listen(config.port, () => {
   console.log(`  media dir:      ${config.mediaDir}`);
   console.log(`  pronunciation:  ${pickProvider()}${pickProvider() === 'estimate' ? ' (no AZURE_SPEECH_KEY / OPENAI_API_KEY: voicing estimate only)' : ''}`);
   console.log(`  feedback:       ${config.anthropicKey ? `Claude (${config.anthropicModel})` : 'templates (no ANTHROPIC_API_KEY)'}`);
+  console.log(`  sign up:        ${config.inviteCode ? 'invite code required' : 'open to anyone with the link (set INVITE_CODE to restrict)'}`);
   if (config.jwtSecret === 'dev-only-secret-change-me') console.log('  WARNING: JWT_SECRET is not set, using an insecure dev default');
 });

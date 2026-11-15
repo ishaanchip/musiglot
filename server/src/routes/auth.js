@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import { requireAuth, signToken } from '../middleware/auth.js';
+import { config } from '../config.js';
 
 const router = Router();
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -16,6 +17,9 @@ router.post('/signup', async (req, res) => {
   const { email, password } = credentials(req.body);
   if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'Enter a valid email address' });
   if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  if (config.inviteCode && String(req.body?.inviteCode || '').trim() !== config.inviteCode) {
+    return res.status(403).json({ error: 'That invite code is not right. Ask whoever invited you for the code.' });
+  }
   if (await User.exists({ email })) return res.status(409).json({ error: 'An account with that email already exists' });
   const user = await User.create({ email, passwordHash: await bcrypt.hash(password, 10) });
   res.status(201).json({ token: signToken(user), user: { id: user._id, email: user.email } });

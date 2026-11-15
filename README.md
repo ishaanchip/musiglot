@@ -36,6 +36,25 @@ Open http://localhost:5173. `docker compose up -d` starts a local MongoDB; skip 
 
 Use Chrome or Edge with headphones. The app needs microphone access, which browsers only allow on `localhost` or HTTPS.
 
+## Sharing an invite-only demo
+
+This runs everything from your own computer and gives it a temporary public HTTPS address. Nothing is uploaded to a host; the link works only while both commands are running.
+
+1. Set `INVITE_CODE=<something>` in `.env` so only people with the code can sign up.
+2. Build the client and serve the whole app from one port:
+
+```bash
+npm run demo
+```
+
+3. In a second terminal, open a tunnel to it (`brew install cloudflared` first; no account needed):
+
+```bash
+cloudflared tunnel --url http://localhost:4000
+```
+
+Share the `https://...trycloudflare.com` address it prints, plus the invite code. The address changes every time you restart the tunnel.
+
 ## Adding a song
 
 1. Make a folder `songs/<slug>/` containing:

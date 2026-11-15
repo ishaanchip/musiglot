@@ -1,4 +1,6 @@
 import express from 'express';
+import fs from 'node:fs';
+import path from 'node:path';
 import cors from 'cors';
 import { config } from './config.js';
 import authRoutes from './routes/auth.js';
@@ -26,7 +28,7 @@ export function createApp() {
   app.use('/media', express.static(config.mediaDir, { maxAge: '1h' }));
 
   app.get('/api/health', (req, res) =>
-    res.json({ ok: true, pronunciationProvider: pickProvider(), llmFeedback: Boolean(config.anthropicKey), cloudTts: Boolean(config.azureKey) })
+    res.json({ ok: true, inviteOnly: Boolean(config.inviteCode), pronunciationProvider: pickProvider(), llmFeedback: Boolean(config.anthropicKey), cloudTts: Boolean(config.azureKey) })
   );
   app.use('/api/auth', wrapAsync(authRoutes));
   app.use('/api/songs', wrapAsync(songRoutes));
@@ -34,6 +36,13 @@ export function createApp() {
   app.use('/api/tts', wrapAsync(ttsRoutes));
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
+
+  // Single-server mode: if the client has been built (npm run demo), serve it here
+  // too, so one port (and one public URL) carries the app, the API and the media.
+  if (fs.existsSync(path.join(config.clientDist, 'index.html'))) {
+    app.use(express.static(config.clientDist));
+    app.get('*', (req, res) => res.sendFile(path.join(config.clientDist, 'index.html')));
+  }
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
     console.error(err);
