@@ -1,23 +1,50 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LANGUAGES } from '../api.js';
+import { api, LANGUAGES } from '../api.js';
+import { IndiaFlag, MexicoFlag, NepalFlag, SpainFlag } from '../components/Flags.jsx';
+
+const CARDS = [
+  { code: 'es', flags: [<MexicoFlag key="mx" />, <SpainFlag key="es" />], blurb: 'Sing along to songs from Mexico, Spain and across Latin America.' },
+  { code: 'hi', flags: [<IndiaFlag key="in" />, <NepalFlag key="np" />], blurb: 'Sing along in Hindi, with every line shown in Devanagari and in Latin letters.' },
+];
 
 export default function LanguagePage() {
   const navigate = useNavigate();
+  const [counts, setCounts] = useState(null);
+
+  // Song counts are a nicety; the page works without them.
+  useEffect(() => {
+    api('/songs')
+      .then(({ songs }) => setCounts(songs.reduce((acc, s) => ({ ...acc, [s.language]: (acc[s.language] || 0) + 1 }), {})))
+      .catch(() => {});
+  }, []);
+
   const choose = (code) => {
     localStorage.setItem('musiglot.language', code);
     navigate(`/catalog/${code}`);
   };
+
   return (
-    <main className="narrow">
-      <h1>What do you want to learn?</h1>
+    <main className="languages">
+      <h1>Languages</h1>
+      <p className="languages-lead">Pick a language and learn it one song at a time.</p>
       <div className="language-grid">
-        {Object.entries(LANGUAGES).map(([code, lang]) => (
-          <button key={code} className="card language-card" onClick={() => choose(code)}>
-            <span className="language-native">{lang.native}</span>
-            <span>{lang.name}</span>
-          </button>
-        ))}
+        {CARDS.map(({ code, flags, blurb }) => {
+          const n = counts?.[code];
+          return (
+            <button key={code} className="language-card" onClick={() => choose(code)}>
+              <span className="language-flags">
+                {flags}
+                {n != null && <span className="language-count">{n} {n === 1 ? 'song' : 'songs'}</span>}
+              </span>
+              <span className="language-body">
+                <span className="language-name">{LANGUAGES[code].name}</span>
+                <span className="language-native" lang={code}>{LANGUAGES[code].native}</span>
+                <span className="language-blurb">{blurb}</span>
+              </span>
+            </button>
+          );
+        })}
       </div>
     </main>
   );

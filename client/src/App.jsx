@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './auth.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import LanguagePage from './pages/LanguagePage.jsx';
@@ -21,16 +21,21 @@ export default function App() {
     <div className="app">
       {user && (
         <header className="topbar">
-          <Link to="/" className="brand">
+          <Link to="/languages" className="brand">
             Musiglot
           </Link>
-          <nav>
-            <Link to="/languages">Languages</Link>
-            <span className="muted">{user.email}</span>
-            <button className="link" onClick={logout}>
+          <span className="topbar-divider" aria-hidden="true" />
+          <nav aria-label="Main">
+            <NavLink to="/languages">Languages</NavLink>
+            <NavLink to="/catalog/es">Spanish</NavLink>
+            <NavLink to="/catalog/hi">Hindi</NavLink>
+          </nav>
+          <div className="topbar-account">
+            <span className="topbar-email">{user.email}</span>
+            <button className="topbar-logout" onClick={logout}>
               Log out
             </button>
-          </nav>
+          </div>
         </header>
       )}
       <Routes>

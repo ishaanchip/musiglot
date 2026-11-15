@@ -30,6 +30,7 @@ export default function PitchLane({ pitch, getTime, recorderRef }) {
       hit: css.getPropertyValue('--good').trim() || '#4cc38a',
       miss: css.getPropertyValue('--poor').trim() || '#e5646b',
       line: css.getPropertyValue('--muted').trim() || '#8b93a7',
+      ring: css.getPropertyValue('--text').trim() || '#202020',
     };
     let raf;
     let lastTarget = (range.lo + range.hi) / 2;
@@ -96,7 +97,7 @@ export default function PitchLane({ pitch, getTime, recorderRef }) {
       if (recorder?.live) {
         const shown = foldToward(recorder.live.midi, lastTarget);
         ctx.fillStyle = refNow != null && Math.abs(shown - refNow) <= 1 ? colors.hit : colors.active;
-        ctx.strokeStyle = '#fff';
+        ctx.strokeStyle = colors.ring;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(x(now), Math.max(6, Math.min(H - 6, y(shown))), 7, 0, Math.PI * 2);

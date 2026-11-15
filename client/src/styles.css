@@ -1,21 +1,21 @@
 :root {
-  --bg: #12141c;
-  --panel: #1b1f2b;
-  --panel-2: #242938;
-  --border: #2f3547;
-  --text: #eef0f6;
-  --muted: #98a0b5;
-  --dim: #5d657c;
-  --accent: #ffb347;
-  --accent-ink: #1b1403;
-  --good: #4cc38a;
-  --ok: #e6b450;
-  --poor: #e5646b;
-  --lane-note: #4b5a82;
-  color-scheme: dark;
+  --bg: #fefdfc;
+  --panel: #ffffff;
+  --panel-2: #f6f2ee;
+  --border: #e6e0da;
+  --text: #202020;
+  --muted: #6b6560;
+  --dim: #b5aea7;
+  --accent: #cf3a2c;
+  --accent-ink: #ffffff;
+  --good: #1f8a5b;
+  --ok: #b7791f;
+  --poor: #a61b4a;
+  --lane-note: #b4c0d8;
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", sans-serif; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Noto Sans Devanagari", Arial, sans-serif; }
 h1 { font-size: 1.6rem; margin: 0 0 0.25rem; }
 h2 { font-size: 1.15rem; margin: 0 0 0.5rem; }
 h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 1.1rem 0 0.4rem; }
@@ -28,9 +28,17 @@ code { background: var(--panel-2); padding: 0.1em 0.35em; border-radius: 4px; fo
 .warn { color: var(--ok); }
 .center { display: grid; place-items: center; min-height: 50vh; }
 
-.topbar { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--border); }
-.topbar nav { display: flex; gap: 1rem; align-items: center; font-size: 0.9rem; }
-.brand { font-weight: 700; font-size: 1.15rem; color: var(--text); text-decoration: none; }
+.topbar { display: flex; align-items: center; gap: 1.25rem; padding: 0.85rem 1.5rem; }
+.brand { font-weight: 800; font-size: 1.6rem; letter-spacing: -0.03em; line-height: 1; color: var(--accent); text-decoration: none; }
+.topbar-divider { width: 1px; height: 1.6rem; background: var(--border); }
+.topbar nav { display: flex; gap: 0.25rem; align-items: center; }
+.topbar nav a { padding: 0.4rem 0.75rem; border-radius: 8px; color: var(--text); font-weight: 500; text-decoration: none; }
+.topbar nav a:hover { background: var(--panel-2); }
+.topbar nav a.active { color: var(--accent); }
+.topbar-account { margin-left: auto; display: flex; align-items: center; gap: 1rem; min-width: 0; }
+.topbar-email { color: var(--muted); font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-logout { padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; white-space: nowrap; }
+@media (max-width: 640px) { .topbar-email, .topbar-divider { display: none; } .topbar { gap: 0.6rem; padding: 0.7rem 1rem; } .brand { font-size: 1.3rem; } }
 main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
 main.narrow { max-width: 460px; }
 
@@ -46,9 +54,21 @@ button.link { background: none; border: none; padding: 0; color: var(--accent); 
 .form label { display: grid; gap: 0.3rem; font-size: 0.9rem; color: var(--muted); }
 input { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 0.7rem; }
 
-.language-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.25rem; }
-.language-card { display: grid; gap: 0.25rem; padding: 2rem 1rem; text-align: center; }
-.language-native { font-size: 1.7rem; font-weight: 600; }
+.languages { max-width: 1100px; padding-top: 4.5rem; text-align: center; }
+.languages h1 { font-size: 2.9rem; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 1.4rem; }
+.languages-lead { margin: 0 0 3.5rem; font-size: 1.3rem; color: var(--muted); }
+.language-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.1rem; }
+.language-card { display: flex; flex-direction: column; width: 20rem; max-width: 100%; padding: 0; overflow: hidden; text-align: left; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s; }
+.language-card:hover:not(:disabled) { border-color: #cfc7bf; box-shadow: 0 6px 20px rgba(60, 40, 20, 0.08); transform: translateY(-2px); }
+.language-flags { position: relative; display: flex; align-items: center; justify-content: center; gap: 0.9rem; height: 9rem; border-bottom: 1px solid var(--border); }
+.flag { display: block; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12)); }
+.language-count { position: absolute; top: 0.6rem; right: 0.6rem; padding: 0.15rem 0.55rem; border-radius: 6px; background: #eef6e6; color: #3d6b1f; font-size: 0.8rem; font-weight: 600; }
+.language-body { display: grid; gap: 0.2rem; padding: 1.2rem 1.3rem 1.5rem; }
+.language-name { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.01em; }
+.language-native { font-size: 1rem; font-weight: 600; color: var(--accent); }
+.language-blurb { margin-top: 0.4rem; color: var(--muted); line-height: 1.45; }
+@media (prefers-reduced-motion: reduce) { .language-card { transition: none; } .language-card:hover:not(:disabled) { transform: none; } }
+@media (max-width: 640px) { .languages { padding-top: 2rem; } .languages h1 { font-size: 2.1rem; } .languages-lead { font-size: 1.05rem; margin-bottom: 2rem; } }
 
 .catalog { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1rem; margin-top: 1rem; }
 .song-card { display: grid; gap: 0.7rem; align-content: start; }
@@ -103,7 +123,7 @@ input { font: inherit; color: var(--text); background: var(--bg); border: 1px so
 .word-detail { margin-top: 0.6rem; padding: 0.7rem; background: var(--panel-2); border-radius: 8px; font-size: 0.95rem; }
 .panel-actions { display: grid; gap: 0.5rem; margin-top: 1rem; }
 
-.modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); display: grid; place-items: center; z-index: 10; padding: 1rem; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(32, 24, 18, 0.45); display: grid; place-items: center; z-index: 10; padding: 1rem; }
 .modal { max-width: 420px; }
 .modal button { margin-top: 0.75rem; }
 
