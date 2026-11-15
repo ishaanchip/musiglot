@@ -261,7 +261,7 @@ export default function PracticePage() {
         <div className="stage-head">
           <div>
             <h1>{song.title}</h1>
-            <p className="muted">{song.artist}</p>
+            <span className="muted">{song.artist}</span>
           </div>
           <Link to={`/catalog/${song.language}`} className="muted">Back to songs</Link>
         </div>
@@ -316,6 +316,7 @@ export default function PracticePage() {
           <button onClick={() => seekTo(nextLine.start - 1)} disabled={blocked || !nextLine} title="Jump to just before the next line">Next line »</button>
         </div>
 
+        <div className="options-row">
         <div className="section-picker">
           <span className="muted">Practise a section:</span>
           <label>
@@ -341,19 +342,17 @@ export default function PracticePage() {
           )}
         </div>
 
-        <label className={`toggle ${listening ? 'disabled' : ''}`}>
+        <label
+          className={`toggle ${listening ? 'disabled' : ''}`}
+          title={listening ? 'Always on while you listen. This switch applies when you sing.' : 'Hear the original singer while you sing. Off gives you the backing track only.'}
+        >
           <input type="checkbox" checked={listening || guideOn} disabled={listening || phase === 'scoring'} onChange={(e) => toggleGuide(e.target.checked)} />
           <span>
             <strong>Guide vocals</strong>
-            <small className="muted">
-              {listening
-                ? 'Always on while you listen. This switch applies when you sing.'
-                : guideOn
-                  ? 'You will hear the original singer while you sing. Easier to follow along.'
-                  : 'Backing track only while you sing. Turn on to hear the original singer.'}
-            </small>
+            <small className="muted">{listening ? 'on while listening' : guideOn ? 'singer on' : 'backing track only'}</small>
           </span>
         </label>
+        </div>
         {error && <p className="error" role="alert">{error}</p>}
       </section>
 

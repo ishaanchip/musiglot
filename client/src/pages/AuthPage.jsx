@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
-import AuthArt from '../components/AuthArt.jsx';
 
 const EyeIcon = ({ off }) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -47,7 +46,6 @@ export default function AuthPage() {
 
   return (
     <div className="auth-page">
-      <AuthArt />
       <main className="auth-card">
           <p className="auth-brand">Musiglot</p>
           <h1>{isLogin ? 'Welcome back!' : 'Create your account'}</h1>
