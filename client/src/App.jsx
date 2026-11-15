@@ -19,11 +19,11 @@ export default function App() {
   const { user, logout } = useAuth();
   return (
     <div className="app">
-      <header className="topbar">
-        <Link to="/" className="brand">
-          Musiglot
-        </Link>
-        {user && (
+      {user && (
+        <header className="topbar">
+          <Link to="/" className="brand">
+            Musiglot
+          </Link>
           <nav>
             <Link to="/languages">Languages</Link>
             <span className="muted">{user.email}</span>
@@ -31,8 +31,8 @@ export default function App() {
               Log out
             </button>
           </nav>
-        )}
-      </header>
+        </header>
+      )}
       <Routes>
         <Route path="/login" element={<AuthPage />} />
         <Route path="/languages" element={<Protected><LanguagePage /></Protected>} />

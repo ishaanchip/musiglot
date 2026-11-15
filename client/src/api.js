@@ -1,7 +1,13 @@
 const TOKEN_KEY = 'musiglot.token';
 
-export const getToken = () => localStorage.getItem(TOKEN_KEY);
-export const setToken = (t) => (t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY));
+// "Remember me" keeps the session in localStorage (survives closing the browser);
+// otherwise it lives in sessionStorage and ends when the tab or browser closes.
+export const getToken = () => localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+export function setToken(token, remember = true) {
+  localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+  if (token) (remember ? localStorage : sessionStorage).setItem(TOKEN_KEY, token);
+}
 
 export async function api(path, { method = 'GET', body, formData } = {}) {
   const headers = {};
