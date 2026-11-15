@@ -1,0 +1,3 @@
+# Optional: local word-level alignment / local pronunciation fallback (no API key).
+# Downloads a Whisper model on first use. Use with ALIGNER=local.
+faster-whisper

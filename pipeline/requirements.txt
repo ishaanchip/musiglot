@@ -1,0 +1,10 @@
+# Core (required)
+librosa>=0.10        # audio loading, pYIN pitch tracking, tempo, energy envelope
+numpy
+soundfile            # audio I/O backend for librosa
+requests             # LRCLIB + OpenAI Whisper HTTP calls
+pymongo              # writes the Song document
+python-dotenv        # loads ../.env
+jsonschema           # validates the LLM's per-line JSON
+anthropic            # LLM content generation + grammar rating
+wordfreq             # vocabulary rarity for difficulty (Spanish + Hindi word lists)

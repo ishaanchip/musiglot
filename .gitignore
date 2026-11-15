@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+__pycache__/
+*.pyc
+.venv/
+# Generated media (audio, clips, pitch data, recordings)
+media/*
+!media/.gitkeep
+# Song inputs: commit meta.json only. Audio and fetched lyrics are copyrighted.
+songs/*/*
+!songs/*/meta.json
