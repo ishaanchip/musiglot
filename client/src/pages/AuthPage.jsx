@@ -1,23 +1,13 @@
 import React, { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
+import AuthArt from '../components/AuthArt.jsx';
 
-const icon = { width: 26, height: 26, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
-const UserIcon = () => (
-  <svg {...icon}>
-    <circle cx="12" cy="8" r="3.6" />
-    <path d="M4.5 20c.6-3.6 3.6-5.6 7.5-5.6s6.900 2 7.500 5.600" />
-  </svg>
-);
-const LockIcon = () => (
-  <svg {...icon}>
-    <rect x="5.500" y="10.500" width="13" height="9.500" rx="2.200" />
-    <path d="M8.500 10.500V8a3.500 3.500 0 0 1 7 0v2.500" />
-  </svg>
-);
-const ArrowIcon = () => (
-  <svg {...icon} width={24} height={24} strokeWidth={2}>
-    <path d="M5 12h14M13 6l6 6-6 6" />
+const EyeIcon = ({ off }) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z" />
+    <circle cx="12" cy="12" r="3" />
+    {off && <path d="M4 20 20 4" />}
   </svg>
 );
 
@@ -27,7 +17,8 @@ export default function AuthPage() {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -56,57 +47,73 @@ export default function AuthPage() {
 
   return (
     <div className="auth-page">
-      <main className="auth-column">
-        <p className="auth-brand">Musiglot</p>
-        <h1>{isLogin ? 'Log in' : 'Sign up'}</h1>
-        <form onSubmit={submit} noValidate={false}>
-          <label htmlFor="auth-email">Email</label>
-          <div className="auth-field">
-            <UserIcon />
-            <input id="auth-email" type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-          </div>
+      <main className="auth-form-side">
+        <div className="auth-column">
+          <p className="auth-brand">Musiglot</p>
+          <h1>{isLogin ? 'Welcome back!' : 'Create your account'}</h1>
 
-          <label htmlFor="auth-password">Password</label>
-          <div className="auth-field">
-            <LockIcon />
-            <input
-              id="auth-password"
-              type="password"
-              placeholder={isLogin ? 'Enter your password' : 'Choose a password (6+ characters)'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              autoComplete={isLogin ? 'current-password' : 'new-password'}
-            />
-          </div>
+          <form onSubmit={submit}>
+            <div className="auth-box">
+              <label htmlFor="auth-email">Email</label>
+              <input id="auth-email" type="email" placeholder="Enter your email..." value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+            </div>
+            <div className="auth-box">
+              <label htmlFor="auth-password">Password</label>
+              <div className="auth-password">
+                <input
+                  id="auth-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder={isLogin ? 'Enter your password...' : 'Choose a password (6+ characters)...'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                />
+                <button type="button" className="auth-eye" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword}>
+                  <EyeIcon off={!showPassword} />
+                </button>
+              </div>
+            </div>
 
-          <div className="auth-row">
-            <label className="auth-remember">
-              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-              Remember me
-            </label>
-            {isLogin && (
-              <button type="button" className="auth-link" onClick={() => setNote('Password reset is not set up yet. For now, create a new account with another email.')}>
-                Forgot password?
-              </button>
-            )}
-          </div>
+            {error && <p className="auth-error" role="alert">{error}</p>}
 
-          {error && <p className="auth-error" role="alert">{error}</p>}
-          {note && <p className="auth-note" role="status">{note}</p>}
+            <button className="auth-submit" disabled={busy}>
+              {busy ? 'Please wait…' : isLogin ? 'Log in' : 'Sign up'}
+            </button>
 
-          <button className="auth-submit" disabled={busy}>
-            {busy ? 'Please wait…' : isLogin ? 'Log in' : 'Sign up'}
-            {!busy && <ArrowIcon />}
-          </button>
-        </form>
-        <p className="auth-switch">
-          <button type="button" className="auth-link" onClick={switchMode}>
-            {isLogin ? 'New here? Create an account' : 'Already have an account? Log in'}
-          </button>
-        </p>
+            <div className="auth-row">
+              {isLogin ? (
+                <button type="button" className="auth-link" onClick={() => setNote('Password reset is not set up yet. For now, create a new account with another email.')}>
+                  Forgot your password?
+                </button>
+              ) : (
+                <span />
+              )}
+              <label className="auth-remember">
+                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                Remember me
+              </label>
+            </div>
+            {note && <p className="auth-note" role="status">{note}</p>}
+          </form>
+
+          <p className="auth-switch">
+            {isLogin ? "Don't have an account? " : 'Already have an account? '}
+            <button type="button" className="auth-link" onClick={switchMode}>
+              {isLogin ? 'Sign up' : 'Log in'}
+            </button>
+          </p>
+        </div>
       </main>
+
+      <aside className="auth-art-side">
+        <AuthArt />
+        <div className="auth-caption">
+          <strong>Sing your way to a new language</strong>
+          <span>Follow the lyrics, hit the notes, and learn Spanish or Hindi one song at a time.</span>
+        </div>
+      </aside>
     </div>
   );
 }
